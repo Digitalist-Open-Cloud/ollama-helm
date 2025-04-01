@@ -6,6 +6,7 @@
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className }}
   {{- end }}
 {{- end }}
+{{- $root := . -}}
 ---
 {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1
@@ -50,13 +51,25 @@ spec:
             {{- end }}
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              {{- if $root.Values.nginx.enabled }}
+              service:
+                name: {{ $root.Values.nginx.name }}
+                port:
+                  number: {{ $root.Values.nginx.port }}
+              {{- else }}
               service:
                 name: {{ $fullName }}
                 port:
                   number: {{ $svcPort }}
+              {{- end }}
+              {{- else }}
+              {{- if $root.Values.nginx.enabled }}
+              serviceName: {{ $root.Values.nginx.name }}
+              servicePort: {{ $root.Values.nginx.port }}
               {{- else }}
               serviceName: {{ $fullName }}
               servicePort: {{ $svcPort }}
+              {{- end }}
               {{- end }}
           {{- end }}
     {{- end }}

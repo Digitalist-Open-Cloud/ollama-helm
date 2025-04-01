@@ -109,6 +109,23 @@ ollama:
   # -- Override ollama-data volume mount path, default: "/root/.ollama"
   mountPath: ""
 
+# Add nginx in front of ollama
+nginx:
+  enabled: true
+  securityContext: {}
+  # capabilities:
+  #  drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+  image:
+    repository: ""
+    tag: ""
+  imagePullPolicy: IfNotPresent
+  port: 80
+  name: nginx
+
 # Service account
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 serviceAccount:

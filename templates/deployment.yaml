@@ -56,6 +56,17 @@ spec:
         {{- tpl (toYaml . ) $ | nindent 8 }}
       {{- end }}
       containers:
+        {{- if .Values.nginx.enabled }}
+        - name: {{ .Chart.Name }}-nginx
+          securityContext:
+            {{- toYaml .Values.nginx.securityContext | nindent 12 }}
+          image: "{{ .Values.nginx.image.repository }}:{{ .Values.nginx.image.tag }}"
+          imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+          ports:
+            - name: {{ .Values.nginx.name }}
+              containerPort: {{ .Values.nginx.port }}
+              protocol: TCP
+        {{- end }}
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -230,15 +241,15 @@ spec:
       {{- end }}
       {{- if or .Values.ollama.gpu.enabled .Values.tolerations }}
       tolerations:
-        {{- if and .Values.ollama.gpu.enabled (and 
-              ( or (eq .Values.ollama.gpu.type "nvidia") (not .Values.ollama.gpu.type)) 
+        {{- if and .Values.ollama.gpu.enabled (and
+              ( or (eq .Values.ollama.gpu.type "nvidia") (not .Values.ollama.gpu.type))
               ( or (not .Values.ollama.gpu.mig) (not .Values.ollama.gpu.mig.enabled))
             ) }}
         - key: "{{(.Values.ollama.gpu.nvidiaResource | default "nvidia.com/gpu")}}"
           operator: Exists
           effect: NoSchedule
-          {{- else if and .Values.ollama.gpu.enabled (and 
-              ( or (eq .Values.ollama.gpu.type "nvidia") (not .Values.ollama.gpu.type)) 
+          {{- else if and .Values.ollama.gpu.enabled (and
+              ( or (eq .Values.ollama.gpu.type "nvidia") (not .Values.ollama.gpu.type))
               (( .Values.ollama.gpu.mig.enabled))
             ) }}
             {{- range $key, $value := .Values.ollama.gpu.mig.devices }}
